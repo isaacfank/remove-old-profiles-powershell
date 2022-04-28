@@ -7,7 +7,7 @@
     Filename:   Clean-Profiles.ps1
     Author:     Isaac Fankhauser
     Created:    2022-4-20
-    Updated:    2022-4-27 9:40
+    Updated:    2022-4-28 9:00
     TODO:       Fully Automate Everything
 #>
 #
@@ -100,18 +100,16 @@ Invoke-Command -ComputerName $termid -ScriptBlock {
             $usertemplatest = @()
             $proflisttemp = Get-ChildItem -Path C:\Users | Where-Object {($_.name -ne "Default") -and ($_.name -ne "Public")}
             $proflisttemp.name | ForEach-Object {
-                $lastwrite = Get-ChildItem "c:\Users\$_\AppData\Local\temp" -Recurse  | 
+                $lastwrite = Get-ChildItem "c:\Users\$_\AppData\Local\temp"  | 
                 Sort-Object -Property LastWriteTime -Descending | 
                 Select-Object -First 1 | Select-Object -ExpandProperty LastWriteTime
-                if ($lastwrite -ne $null){
-                    $lastwrite = [DateTime]$lastwrite
-                    }
+                $lastwrite = [DateTime]$lastwrite
                 $item = New-Object PSObject
                 $item | Add-Member -type NoteProperty -Name 'name' -Value "$_"
                 $item | Add-Member -type NoteProperty -Name 'LastWriteTime' -Value $lastwrite
                 $usertemplatest += $item
             }
-            $proflist = $usertemplatest | Sort-Object LastWriteTime -Descending | Where-Object {(($_.LastWriteTime) -lt (Get-Date).AddDays(-$days)) -and ($_.name -ne "Default") -and ($_.name -ne "Public") -and ($_.LastWriteTime -ne $null)}
+            $proflist = $usertemplatest | Sort-Object LastWriteTime -Descending | Where-Object {(($_.LastWriteTime) -lt (Get-Date).AddDays(-$days)) -and ($_.name -ne "Default") -and ($_.name -ne "Public") -and ($_.name -ne $env:UserName)}
             #$proflist = Get-ChildItem -Path C:\Users | Where-Object {(($_.LastWriteTime) -lt (Get-Date).AddDays(-$days)) -and ($_.name -ne "Default") -and ($_.name -ne "Public")}
             $newtotal = $usertemplatest.count - $proflist.count
             $proflistcount = $proflist.count
